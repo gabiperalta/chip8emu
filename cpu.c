@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <time.h>
+
+#include "video.h"
 
 uint8_t *memory;
 uint8_t *registers;
@@ -29,6 +32,8 @@ void init_cpu() {
     memset(pixels, 0, sizeof(bool) * 64 * 32);
 
     load_hex_sprites();
+
+    srand(time(NULL));
 
     // TEST
     pixels[0 + 0 * 64] = true;
@@ -143,8 +148,21 @@ void cpu_decode() {
         case 0xB: // (Bnnn) JP V0, addr
             instrution_to_execute = &jump_plus_register;
             break;
+        case 0xC: // (Cxkk) RND Vx, byte
+            instrution_to_execute = &generate_random;
+            break;
         case 0xD: // (Dxyn) DRW Vx, Vy, nibble
             instrution_to_execute = &display_bytes;
+            break;
+        case 0xE:
+            subgroup = opcode & 0x00FF;
+            if (subgroup == 0x9E) { // (Ex9E) SKP Vx
+                instrution_to_execute = &skip_if_key_is_pressed;
+            } else if (subgroup == 0xA1) { // (ExA1) SKNP Vx
+                instrution_to_execute = &skip_if_key_is_not_pressed;
+            } else {
+                instrution_to_execute = &instruction_not_defined;
+            }
             break;
         case 0xF:
             subgroup = opcode & 0x00FF;
@@ -180,12 +198,10 @@ void cpu_execute() {
     instrution_to_execute();
 }
 
-void load_program() {
+void load_program(char *filename) {
     int count = 0;
-    FILE *file = fopen("/home/gabi/Downloads/1-chip8-logo.ch8", "rb");
-    //FILE *file = fopen("/home/gabi/Downloads/2-ibm-logo.ch8", "rb");
-    //FILE *file = fopen("/home/gabi/Downloads/3-corax+.ch8", "rb");
-    //FILE *file = fopen("/home/gabi/Downloads/4-flags.ch8", "rb");
+
+    FILE *file = fopen(filename, "rb");
     if (file == NULL) {
         printf("The file is not opened. The program will "
                "now exit.");
@@ -199,6 +215,20 @@ void load_program() {
         count++;
     }
     fclose(file);
+
+    /*
+    memory[program_counter + count] = 0x60;
+    memory[program_counter + count + 1] = 0x02;
+    count += 2;
+
+    memory[program_counter + count] = 0x60;
+    memory[program_counter + count + 1] = 0x02;
+    count += 2;
+
+    memory[program_counter + count] = 0x60;
+    memory[program_counter + count + 1] = 0x02;
+    count += 2;
+    */
 }
 
 bool *get_pixels() {
@@ -382,8 +412,16 @@ void load_address_in_register_i() {
 
 void jump_plus_register() {
     uint16_t address = opcode & 0x0FFF;
-    printf("jump to address %d\n + %d", address, registers[0]);
+    printf("jump to address %d + %d\n", address, registers[0]);
     program_counter = address + registers[0];
+}
+
+void generate_random() {
+    uint8_t register_number = (opcode >> 8) & 0x0F;
+    uint8_t byte = opcode & 0x00FF;
+    uint8_t random_number = rand() % 256;
+    printf("AND generated random number %d with byte %d\n", random_number, byte);
+    registers[register_number] = random_number & byte;
 }
 
 void display_bytes() { // TODO revisar lo de que un sprite se imprima por fuera de las coordenadas (en principio ya esta hecho)
@@ -409,6 +447,24 @@ void display_bytes() { // TODO revisar lo de que un sprite se imprima por fuera 
                 registers[15] = 1;
             }
         }
+    }
+}
+
+void skip_if_key_is_pressed() {
+    uint8_t register_number_x = (opcode >> 8) & 0x0F;
+    printf("skip if the key %d is pressed\n", registers[register_number_x]);
+    SDL_Keycode key_pressed = get_key_pressed();
+    if (registers[register_number_x] == key_pressed) {
+        program_counter += 2;
+    }
+}
+
+void skip_if_key_is_not_pressed() {
+    uint8_t register_number_x = (opcode >> 8) & 0x0F;
+    printf("skip if the key %d is NOT pressed\n", registers[register_number_x]);
+    SDL_Keycode key_pressed = get_key_pressed();
+    if (registers[register_number_x] != key_pressed) {
+        program_counter += 2;
     }
 }
 

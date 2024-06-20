@@ -6,6 +6,7 @@ SDL_Window* window;
 SDL_Renderer* renderer;
 SDL_Event event;
 bool cycle_test;
+SDL_Keycode key_pressed;
 
 void init_video() {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) { // or INIT EVERYTHING
@@ -29,20 +30,13 @@ void init_video() {
     SDL_RenderSetScale(renderer, SCREEN_SCALE, SCREEN_SCALE);
 }
 
-bool key_event() {
+int key_event() {
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_KEYDOWN) {
-            switch (event.key.keysym.sym) {
-                case SDLK_UP:
-                    cycle_test = true;
-                    break;
-                case SDLK_ESCAPE:
-                    return false;
-                    break;
-            }
+            return event.key.keysym.sym;
         }
     }
-    return true;
+    return SDLK_UNKNOWN;
 }
 
 void show_video() {
@@ -87,4 +81,12 @@ void set_cycle_test(bool value) {
 
 bool get_cycle_test() {
     return cycle_test;
+}
+
+void set_key_pressed(SDL_Keycode value) {
+    key_pressed = value;
+}
+
+SDL_Keycode get_key_pressed() {
+    return key_pressed;
 }

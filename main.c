@@ -1,21 +1,19 @@
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
-
 #include "cpu.h"
 #include "video.h"
 
-int main(void) {
-
-    bool run = true;
-    //bool cycle_test = false;
+int main(int argc, char *argv[]) {
 
     init_cpu();
     init_video();
 
-    load_program();
+    if (argc == 2) {
+        load_program(argv[1]);
+        //printf("argc %d\n", argc);
+        //printf("argv %s\n", argv[1]);
+    } else {
+        printf("No filename has specified\n");
+        return -1;
+    }
 
     //bool *pixels_test = malloc(sizeof(bool) * 64 * 32);
     //memset(pixels_test, 0, sizeof(bool) * 64 * 32);
@@ -24,16 +22,17 @@ int main(void) {
 
     //draw(pixels_test);
 
-    while (run) {
+    ///*
+    SDL_Keycode key_pressed;
+    while ((key_pressed = key_event()) != SDLK_ESCAPE) {
 
-        if (get_cycle_test()) {
+        set_key_pressed(key_pressed);
+
+        //if (SDLK_UP == key_pressed) { // key arrow UP
             cpu_fetch();
             cpu_decode();
             cpu_execute();
-            set_cycle_test(true);
-        }
-
-        run = key_event();
+        //}
 
         draw(get_pixels());
         show_video();
@@ -41,5 +40,6 @@ int main(void) {
 
     close_video();
     close_cpu();
+    //*/
     return 0;
 }
