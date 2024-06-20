@@ -140,7 +140,9 @@ void cpu_decode() {
         case 0xA: // (Annn) LD I, addr
             instrution_to_execute = &load_address_in_register_i;
             break;
-        // TODO 0xB
+        case 0xB: // (Bnnn) JP V0, addr
+            instrution_to_execute = &jump_plus_register;
+            break;
         case 0xD: // (Dxyn) DRW Vx, Vy, nibble
             instrution_to_execute = &display_bytes;
             break;
@@ -376,6 +378,12 @@ void load_address_in_register_i() {
     uint16_t address = opcode & 0x0FFF;
     printf("load address %d to register I\n", address);
     register_i = address;
+}
+
+void jump_plus_register() {
+    uint16_t address = opcode & 0x0FFF;
+    printf("jump to address %d\n + %d", address, registers[0]);
+    program_counter = address + registers[0];
 }
 
 void display_bytes() { // TODO revisar lo de que un sprite se imprima por fuera de las coordenadas (en principio ya esta hecho)

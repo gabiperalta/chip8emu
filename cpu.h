@@ -31,6 +31,7 @@ void sub_register_x_in_register_y();
 void shl();
 void skip_if_registers_not_equals();
 void load_address_in_register_i();
+void jump_plus_register();
 void display_bytes();
 void add_register_x_to_register_i();
 void load_bcd_from_register();
