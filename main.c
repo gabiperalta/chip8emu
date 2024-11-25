@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
 
         set_key_pressed(key_pressed);
 
-        //if (SDLK_UP == key_pressed) { // key arrow UP
+        //if (SDLK_1 == key_pressed || SDLK_UP == key_pressed) { // key arrow UP
             cpu_fetch();
             cpu_decode();
             cpu_execute();

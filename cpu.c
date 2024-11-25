@@ -168,8 +168,8 @@ void cpu_decode() {
             subgroup = opcode & 0x00FF;
             if (subgroup == 0x07) { // (8xy0) LD Vx, Vy
                 instrution_to_execute = &instruction_not_defined;
-            } else if (subgroup == 0x0A) { // (8xy1) OR Vx, Vy
-                instrution_to_execute = &instruction_not_defined;
+            } else if (subgroup == 0x0A) { // (Fx0A) LD Vx, K
+                instrution_to_execute = &wait_for_key_pressed;
             } else if (subgroup == 0x15) { // (8xy2) AND Vx, Vy
                 instrution_to_execute = &instruction_not_defined;
             } else if (subgroup == 0x18) { // (8xy3) XOR Vx, Vy
@@ -454,7 +454,7 @@ void skip_if_key_is_pressed() {
     uint8_t register_number_x = (opcode >> 8) & 0x0F;
     printf("skip if the key %d is pressed\n", registers[register_number_x]);
     SDL_Keycode key_pressed = get_key_pressed();
-    if (registers[register_number_x] == key_pressed) {
+    if (registers[register_number_x] == get_hex_from_ascii(key_pressed)) {
         program_counter += 2;
     }
 }
@@ -463,9 +463,16 @@ void skip_if_key_is_not_pressed() {
     uint8_t register_number_x = (opcode >> 8) & 0x0F;
     printf("skip if the key %d is NOT pressed\n", registers[register_number_x]);
     SDL_Keycode key_pressed = get_key_pressed();
-    if (registers[register_number_x] != key_pressed) {
+    if (registers[register_number_x] != get_hex_from_ascii(key_pressed)) {
         program_counter += 2;
     }
+}
+
+void wait_for_key_pressed() {
+    uint8_t register_number_x = (opcode >> 8) & 0x0F;
+    printf("wait for a key press and save it in register_x %d\n", register_number_x);
+    uint8_t key_pressed = key_event();
+    registers[register_number_x] = get_hex_from_ascii(key_pressed);
 }
 
 void add_register_x_to_register_i() {

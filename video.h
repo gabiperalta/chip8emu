@@ -11,6 +11,8 @@ void show_video();
 void draw(bool *pixels);
 void close_video();
 
+uint8_t get_hex_from_ascii(SDL_Keycode value);
+
 void set_cycle_test(const bool value);
 bool get_cycle_test();
 void set_key_pressed(SDL_Keycode value);

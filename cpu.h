@@ -36,6 +36,7 @@ void generate_random();
 void display_bytes();
 void skip_if_key_is_pressed();
 void skip_if_key_is_not_pressed();
+void wait_for_key_pressed();
 void add_register_x_to_register_i();
 void load_bcd_from_register();
 void load_registers_to_memory();
